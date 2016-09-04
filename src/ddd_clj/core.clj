@@ -1,23 +1,51 @@
 (ns ddd-clj.core
   (:gen-class))
 
-(defprotocol Aggregate
-  (aggregate-behaviour [args])
 
-(defrecord Command [agg-id data])
-(defrecord OtherCommand [agg-id data])
 
-(defmethod Handle Command [command])
-(defmethod Handle OtherCommand [command])
 
-(defrecord Event [agg-id data])
-(defrecord OtherEvent [agg-id data])
 
-(defmethod apply-event Event [state event])
-(defmethod apply-event OtherEvent [state event])
+(defprotocol DomainRepo
+  (get-by-id [dr id])
+  (save [dr agg]))
 
-(defprotocol CommandHandler
-  (perform [command state]))
+(defrecord EventStore []
+  DomainRepo
+  (get-by-id [dr id] (...))
+  (save [dr agg] (...)))
+
+
+
+
+
+(defprotocol Aggregate)
+
+(defrecord EgAgg [id]
+  Aggregate)
 
 (defmulti apply-event
-  (fn [state event] (class event)))
+  (fn [agg event]
+    [(type agg) (type event)]))
+
+(defmethod apply-event [ddd-clj.core.EgAgg ddd-clj.core.EgEvent]
+  [agg event])
+
+
+
+
+
+(defprotocol Command
+  (handle [command]))
+
+(defrecord EgCommand [agg-id]
+  Command
+  (handle [command]))
+
+
+
+
+
+(defprotocol Event)
+
+(defrecord EgEvent [agg-id data]
+  Event)
